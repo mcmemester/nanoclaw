@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits, Message, TextChannel } from 'discord.js';
+import { Client, Events, GatewayIntentBits, Message, Partials, TextChannel } from 'discord.js';
 
 import { ASSISTANT_NAME, TRIGGER_PATTERN } from '../config.js';
 import { readEnvFile } from '../env.js';
@@ -37,6 +37,9 @@ export class DiscordChannel implements Channel {
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
       ],
+      // Partials are required for Discord.js to emit MessageCreate events
+      // for DMs. Without Partials.Channel the event is silently dropped.
+      partials: [Partials.Channel, Partials.Message],
     });
 
     this.client.on(Events.MessageCreate, async (message: Message) => {
