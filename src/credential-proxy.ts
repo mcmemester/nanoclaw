@@ -32,6 +32,7 @@ export function startCredentialProxy(
     'CLAUDE_CODE_OAUTH_TOKEN',
     'ANTHROPIC_AUTH_TOKEN',
     'ANTHROPIC_BASE_URL',
+    'GITHUB_TOKEN',
   ]);
 
   const authMode: AuthMode = secrets.ANTHROPIC_API_KEY ? 'api-key' : 'oauth';
@@ -46,6 +47,18 @@ export function startCredentialProxy(
 
   return new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
+      // Serve GitHub token to containers on request
+      if (req.method === 'GET' && req.url === '/nanoclaw/github-pat') {
+        if (secrets.GITHUB_TOKEN) {
+          res.writeHead(200, { 'content-type': 'text/plain' });
+          res.end(secrets.GITHUB_TOKEN);
+        } else {
+          res.writeHead(404);
+          res.end('GITHUB_TOKEN not configured');
+        }
+        return;
+      }
+
       const chunks: Buffer[] = [];
       req.on('data', (c) => chunks.push(c));
       req.on('end', () => {
