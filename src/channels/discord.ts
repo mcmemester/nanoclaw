@@ -89,6 +89,12 @@ export class DiscordChannel implements Channel {
         }
       }
 
+      // In DMs there is no @mention convention — auto-prepend the trigger so
+      // every DM is delivered regardless of the group's requires_trigger setting.
+      if (!message.guild && !TRIGGER_PATTERN.test(content)) {
+        content = `@${ASSISTANT_NAME} ${content}`;
+      }
+
       // Handle attachments — store placeholders so the agent knows something was sent
       if (message.attachments.size > 0) {
         const attachmentDescriptions = [...message.attachments.values()].map((att) => {
